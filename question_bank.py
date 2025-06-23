@@ -1,5 +1,7 @@
 import customtkinter as ctk
 
+next_id = 1
+
 
 class QuestionBank:
     def __init__(self):
@@ -44,10 +46,7 @@ class QuestionBank:
         return f"Question {question_id} removed: {question['text']}"
 
 
-# --- GUI PART ---
 qb = QuestionBank()
-
-next_id = 1  # Track the next available question ID
 
 
 def update_next_id():
@@ -147,7 +146,7 @@ def open_cycle_window():
 ctk.set_appearance_mode("light")
 root = ctk.CTk()
 root.title("Question Bank")
-root.geometry("600x600")  # Increased window size
+root.geometry("600x600")  # Window size
 
 entry_id = ctk.CTkEntry(root, placeholder_text="Question ID", width=400, height=40)
 entry_id.pack(padx=20, pady=10)
@@ -160,7 +159,7 @@ entry_diff = ctk.CTkComboBox(
 )
 entry_diff.pack(padx=20, pady=10)
 
-update_next_id()  # Set initial Question ID
+update_next_id()
 update_topic_dropdown()
 
 btn_add = ctk.CTkButton(
