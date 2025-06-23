@@ -1,5 +1,6 @@
 import customtkinter as ctk
 
+
 class QuestionBank:
     def __init__(self):
         self.questions = {}
@@ -12,7 +13,7 @@ class QuestionBank:
         self.questions[question_id] = {
             "text": question_text,
             "topic": topic,
-            "difficulty": difficulty
+            "difficulty": difficulty,
         }
         if topic not in self.topic:
             self.topic[topic] = []
@@ -24,8 +25,9 @@ class QuestionBank:
     def search_questions(self, topic=None, difficulty=None):
         results = []
         for question_id, question in self.questions.items():
-            if (topic is None or question["topic"] == topic) and \
-               (difficulty is None or question["difficulty"] == difficulty):
+            if (topic is None or question["topic"] == topic) and (
+                difficulty is None or question["difficulty"] == difficulty
+            ):
                 results.append((question_id, question["text"]))
         return results
 
@@ -41,17 +43,20 @@ class QuestionBank:
             del self.difficulty[question["difficulty"]]
         return f"Question {question_id} removed: {question['text']}"
 
+
 # --- GUI PART ---
 qb = QuestionBank()
 
 next_id = 1  # Track the next available question ID
 
+
 def update_next_id():
     global next_id
     entry_id.configure(state="normal")
-    entry_id.delete(0, 'end')
+    entry_id.delete(0, "end")
     entry_id.insert(0, str(next_id))
     entry_id.configure(state="readonly")
+
 
 def add_question():
     global next_id
@@ -68,6 +73,7 @@ def add_question():
     except Exception as e:
         output.configure(text=str(e))
 
+
 def search_questions():
     topic = entry_topic.get() or None
     diff = entry_diff.get() or None
@@ -76,6 +82,7 @@ def search_questions():
         output.configure(text="\n".join([f"{qid}: {txt}" for qid, txt in results]))
     else:
         output.configure(text="No results found.")
+
 
 def delete_question():
     global next_id
@@ -93,9 +100,49 @@ def delete_question():
     except Exception as e:
         output.configure(text=str(e))
 
+
 def update_topic_dropdown():
     topics = list(qb.topic.keys())
     entry_topic.configure(values=topics)
+
+
+def open_cycle_window():
+    cycle_win = ctk.CTkToplevel(root)
+    cycle_win.title("Cycle Through Questions")
+    cycle_win.geometry("500x300")
+
+    questions = list(qb.questions.items())
+    if not questions:
+        msg = ctk.CTkLabel(cycle_win, text="No questions available.")
+        msg.pack(pady=20)
+        return
+
+    idx = [0]
+
+    def show_question():
+        qid, q = questions[idx[0]]
+        question_label.configure(
+            text=f"ID: {qid}\nTopic: {q['topic']}\nDifficulty: {q['difficulty']}\n\n{q['text']}"
+        )
+
+    def next_question():
+        idx[0] = (idx[0] + 1) % len(questions)
+        show_question()
+
+    def prev_question():
+        idx[0] = (idx[0] - 1) % len(questions)
+        show_question()
+
+    question_label = ctk.CTkLabel(cycle_win, text="", wraplength=450, justify="left")
+    question_label.pack(pady=20)
+
+    btn_prev = ctk.CTkButton(cycle_win, text="Previous", command=prev_question)
+    btn_prev.pack(side="left", padx=40, pady=10)
+    btn_next = ctk.CTkButton(cycle_win, text="Next", command=next_question)
+    btn_next.pack(side="right", padx=40, pady=10)
+
+    show_question()
+
 
 ctk.set_appearance_mode("light")
 root = ctk.CTk()
@@ -108,20 +155,34 @@ entry_text = ctk.CTkEntry(root, placeholder_text="Question Text", width=400, hei
 entry_text.pack(padx=20, pady=10)
 entry_topic = ctk.CTkComboBox(root, values=["Categories"], width=400, height=40)
 entry_topic.pack(padx=20, pady=10)
-entry_diff = ctk.CTkComboBox(root, values=["Easy", "Medium", "Hard"], width=400, height=40)
+entry_diff = ctk.CTkComboBox(
+    root, values=["Easy", "Medium", "Hard"], width=400, height=40
+)
 entry_diff.pack(padx=20, pady=10)
 
 update_next_id()  # Set initial Question ID
-update_topic_dropdown()  
+update_topic_dropdown()
 
-btn_add = ctk.CTkButton(root, text="Add Question", command=add_question, width=200, height=40)
+btn_add = ctk.CTkButton(
+    root, text="Add Question", command=add_question, width=200, height=40
+)
 btn_add.pack(padx=20, pady=10)
-btn_search = ctk.CTkButton(root, text="Search Questions", command=search_questions, width=200, height=40)
+btn_search = ctk.CTkButton(
+    root, text="Search Questions", command=search_questions, width=200, height=40
+)
 btn_search.pack(padx=20, pady=10)
-btn_delete = ctk.CTkButton(root, text="Delete Question", command=delete_question, width=200, height=40)
+btn_delete = ctk.CTkButton(
+    root, text="Delete Question", command=delete_question, width=200, height=40
+)
 btn_delete.pack(padx=20, pady=10)
+btn_cycle = ctk.CTkButton(
+    root, text="Cycle Questions", command=open_cycle_window, width=200, height=40
+)
+btn_cycle.pack(padx=20, pady=10)
 
-output = ctk.CTkLabel(root, text="", wraplength=500, justify="left", width=500, height=100)
+output = ctk.CTkLabel(
+    root, text="", wraplength=500, justify="left", width=500, height=100
+)
 output.pack(padx=20, pady=20)
 
 root.mainloop()
