@@ -1,6 +1,7 @@
 import customtkinter as ctk
 
 next_id = 1
+lock_temp = True
 
 
 class RunLog:
@@ -50,11 +51,15 @@ log = RunLog()
 
 
 def update_next_id():
-    global next_id
-    entry_id.configure(state="normal")
-    entry_id.delete(0, "end")
-    entry_id.insert(0, str(next_id))
-    entry_id.configure(state="readonly")
+    if lock_temp.get():
+        global next_id
+        entry_id.configure(state="normal")
+        entry_id.delete(0, "end")
+        entry_id.insert(0, str(next_id))
+        entry_id.configure(state="readonly")
+    else:
+        entry_id.configure(state="normal")
+        entry_id.delete(0, "end")
 
 
 def add_run():
@@ -95,6 +100,24 @@ def delete_run():
         else:
             next_id = 1
         update_next_id()
+        update_terrain_dropdown()
+    except Exception as e:
+        output.configure(text=str(e))
+
+
+def edit_run():
+    try:
+        rid = int(entry_id.get())
+        if rid not in log.runs:
+            output.configure(text=f"Run ID {rid} does not exist.")
+            return
+        distance = entry_distance.get()
+        terrain = entry_terrain.get()
+        duration = entry_duration.get()
+        log.runs[rid]["distance"] = distance
+        log.runs[rid]["terrain"] = terrain
+        log.runs[rid]["duration"] = duration
+        output.configure(text=f"Run {rid} updated.")
         update_terrain_dropdown()
     except Exception as e:
         output.configure(text=str(e))
@@ -143,11 +166,17 @@ def open_cycle_window():
     show_run()
 
 
+def toggle_lock_temp():
+    update_next_id()
+
+
 # GUI Setup
 ctk.set_appearance_mode("light")
 root = ctk.CTk()
 root.title("Run Log")
-root.geometry("600x600")
+root.geometry("600x800")
+
+lock_temp = ctk.BooleanVar(value=True)
 
 entry_id = ctk.CTkEntry(root, placeholder_text="Run ID", width=400, height=40)
 entry_id.pack(padx=20, pady=10)
@@ -175,10 +204,16 @@ btn_delete = ctk.CTkButton(
     root, text="Delete Run", command=delete_run, width=200, height=40
 )
 btn_delete.pack(padx=20, pady=10)
+btn_edit = ctk.CTkButton(root, text="Edit Run", command=edit_run, width=200, height=40)
+btn_edit.pack(padx=20, pady=10)
 btn_cycle = ctk.CTkButton(
     root, text="Cycle Runs", command=open_cycle_window, width=200, height=40
 )
 btn_cycle.pack(padx=20, pady=10)
+lock_checkbox = ctk.CTkCheckBox(
+    root, text="Lock", variable=lock_temp, command=toggle_lock_temp
+)
+lock_checkbox.pack(padx=20, pady=(0, 10), anchor="w")
 
 output = ctk.CTkLabel(
     root, text="", wraplength=500, justify="left", width=500, height=100
