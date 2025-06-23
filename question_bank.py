@@ -44,7 +44,17 @@ class QuestionBank:
 # --- GUI PART ---
 qb = QuestionBank()
 
+next_id = 1  # Track the next available question ID
+
+def update_next_id():
+    global next_id
+    entry_id.configure(state="normal")
+    entry_id.delete(0, 'end')
+    entry_id.insert(0, str(next_id))
+    entry_id.configure(state="readonly")
+
 def add_question():
+    global next_id
     try:
         qid = int(entry_id.get())
         text = entry_text.get()
@@ -52,6 +62,9 @@ def add_question():
         diff = entry_diff.get()
         qb.add_question(qid, text, topic, diff)
         output.configure(text=f"Added question {qid}")
+        next_id += 1
+        update_next_id()
+        update_topic_dropdown()
     except Exception as e:
         output.configure(text=str(e))
 
@@ -65,34 +78,50 @@ def search_questions():
         output.configure(text="No results found.")
 
 def delete_question():
+    global next_id
     try:
         qid = int(entry_id.get())
         msg = qb.delete_question(qid)
         output.configure(text=msg)
+        if qb.questions:
+            max_id = max(qb.questions.keys())
+            next_id = max_id + 1
+        else:
+            next_id = 1
+        update_next_id()
+        update_topic_dropdown()
     except Exception as e:
         output.configure(text=str(e))
+
+def update_topic_dropdown():
+    topics = list(qb.topic.keys())
+    entry_topic.configure(values=topics)
 
 ctk.set_appearance_mode("light")
 root = ctk.CTk()
 root.title("Question Bank")
+root.geometry("600x600")  # Increased window size
 
-entry_id = ctk.CTkEntry(root, placeholder_text="Question ID")
-entry_id.pack(padx=10, pady=5)
-entry_text = ctk.CTkEntry(root, placeholder_text="Question Text")
-entry_text.pack(padx=10, pady=5)
-entry_topic = ctk.CTkEntry(root, placeholder_text="Topic")
-entry_topic.pack(padx=10, pady=5)
-entry_diff = ctk.CTkEntry(root, placeholder_text="Difficulty")
-entry_diff.pack(padx=10, pady=5)
+entry_id = ctk.CTkEntry(root, placeholder_text="Question ID", width=400, height=40)
+entry_id.pack(padx=20, pady=10)
+entry_text = ctk.CTkEntry(root, placeholder_text="Question Text", width=400, height=40)
+entry_text.pack(padx=20, pady=10)
+entry_topic = ctk.CTkComboBox(root, values=["Categories"], width=400, height=40)
+entry_topic.pack(padx=20, pady=10)
+entry_diff = ctk.CTkComboBox(root, values=["Easy", "Medium", "Hard"], width=400, height=40)
+entry_diff.pack(padx=20, pady=10)
 
-btn_add = ctk.CTkButton(root, text="Add Question", command=add_question)
-btn_add.pack(padx=10, pady=5)
-btn_search = ctk.CTkButton(root, text="Search Questions", command=search_questions)
-btn_search.pack(padx=10, pady=5)
-btn_delete = ctk.CTkButton(root, text="Delete Question", command=delete_question)
-btn_delete.pack(padx=10, pady=5)
+update_next_id()  # Set initial Question ID
+update_topic_dropdown()  
 
-output = ctk.CTkLabel(root, text="", wraplength=400, justify="left")
-output.pack(padx=10, pady=10)
+btn_add = ctk.CTkButton(root, text="Add Question", command=add_question, width=200, height=40)
+btn_add.pack(padx=20, pady=10)
+btn_search = ctk.CTkButton(root, text="Search Questions", command=search_questions, width=200, height=40)
+btn_search.pack(padx=20, pady=10)
+btn_delete = ctk.CTkButton(root, text="Delete Question", command=delete_question, width=200, height=40)
+btn_delete.pack(padx=20, pady=10)
+
+output = ctk.CTkLabel(root, text="", wraplength=500, justify="left", width=500, height=100)
+output.pack(padx=20, pady=20)
 
 root.mainloop()
