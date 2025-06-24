@@ -50,7 +50,7 @@ class RunLog:
 log = RunLog()
 
 
-def update_next_id():
+def gui_update_next_id():
     if lock_temp.get():
         global next_id
         entry_id.configure(state="normal")
@@ -62,7 +62,7 @@ def update_next_id():
         entry_id.delete(0, "end")
 
 
-def add_run():
+def gui_add_run():
     global next_id
     try:
         rid = int(entry_id.get())
@@ -72,13 +72,13 @@ def add_run():
         log.add_run(rid, distance, terrain, duration)
         output.configure(text=f"Added run {rid}")
         next_id += 1
-        update_next_id()
-        update_terrain_dropdown()
+        gui_update_next_id()
+        gui_update_terrain_dropdown()
     except Exception as e:
         output.configure(text=str(e))
 
 
-def search_runs():
+def gui_search_runs():
     terrain = entry_terrain.get() or None
     duration = entry_duration.get() or None
     results = log.search_runs(terrain, duration)
@@ -88,7 +88,7 @@ def search_runs():
         output.configure(text="No results found.")
 
 
-def delete_run():
+def gui_delete_run():
     global next_id
     try:
         rid = int(entry_id.get())
@@ -99,13 +99,13 @@ def delete_run():
             next_id = max_id + 1
         else:
             next_id = 1
-        update_next_id()
-        update_terrain_dropdown()
+        gui_update_next_id()
+        gui_update_terrain_dropdown()
     except Exception as e:
         output.configure(text=str(e))
 
 
-def edit_run():
+def gui_edit_run():
     try:
         rid = int(entry_id.get())
         if rid not in log.runs:
@@ -118,17 +118,17 @@ def edit_run():
         log.runs[rid]["terrain"] = terrain
         log.runs[rid]["duration"] = duration
         output.configure(text=f"Run {rid} updated.")
-        update_terrain_dropdown()
+        gui_update_terrain_dropdown()
     except Exception as e:
         output.configure(text=str(e))
 
 
-def update_terrain_dropdown():
+def gui_update_terrain_dropdown():
     terrains = list(log.terrain.keys())
     entry_terrain.configure(values=terrains)
 
 
-def open_cycle_window():
+def gui_open_cycle_window():
     cycle_win = ctk.CTkToplevel(root)
     cycle_win.title("Cycle Through Runs")
     cycle_win.geometry("500x300")
@@ -166,8 +166,8 @@ def open_cycle_window():
     show_run()
 
 
-def toggle_lock_temp():
-    update_next_id()
+def gui_toggle_lock_temp():
+    gui_update_next_id()
 
 
 # GUI Setup
@@ -191,27 +191,27 @@ entry_duration = ctk.CTkComboBox(
 )
 entry_duration.pack(padx=20, pady=10)
 
-update_next_id()
-update_terrain_dropdown()
+gui_update_next_id()
+gui_update_terrain_dropdown()
 
-btn_add = ctk.CTkButton(root, text="Add Run", command=add_run, width=200, height=40)
+btn_add = ctk.CTkButton(root, text="Add Run", command=gui_add_run, width=200, height=40)
 btn_add.pack(padx=20, pady=10)
 btn_search = ctk.CTkButton(
-    root, text="Search Runs", command=search_runs, width=200, height=40
+    root, text="Search Runs", command=gui_search_runs, width=200, height=40
 )
 btn_search.pack(padx=20, pady=10)
 btn_delete = ctk.CTkButton(
-    root, text="Delete Run", command=delete_run, width=200, height=40
+    root, text="Delete Run", command=gui_delete_run, width=200, height=40
 )
 btn_delete.pack(padx=20, pady=10)
-btn_edit = ctk.CTkButton(root, text="Edit Run", command=edit_run, width=200, height=40)
+btn_edit = ctk.CTkButton(root, text="Edit Run", command=gui_edit_run, width=200, height=40)
 btn_edit.pack(padx=20, pady=10)
 btn_cycle = ctk.CTkButton(
-    root, text="Cycle Runs", command=open_cycle_window, width=200, height=40
+    root, text="Cycle Runs", command=gui_open_cycle_window, width=200, height=40
 )
 btn_cycle.pack(padx=20, pady=10)
 lock_checkbox = ctk.CTkCheckBox(
-    root, text="Lock", variable=lock_temp, command=toggle_lock_temp
+    root, text="Lock", variable=lock_temp, command=gui_toggle_lock_temp
 )
 lock_checkbox.pack(padx=20, pady=(0, 10), anchor="w")
 
